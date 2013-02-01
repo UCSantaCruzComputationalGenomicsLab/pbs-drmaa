@@ -242,13 +242,18 @@ retry:
 #  endif
 #endif
 
-                        /* Replace switch statement with ifs to avoid compilation error on gordon */
-			if ( pbs_errno == PBSE_UNKJOBID ) {}
-			else if ( pbs_errno == PBSE_PROTOCOL ||
-			          pbs_errno == PBSOLDE_PROTOCOL ||
-			          pbs_errno == PBSE_EXPIRED ||
-			         pbs_errno == PBSOLDE_EXPIRED )
-			{
+			switch( pbs_errno )
+			 {
+				case PBSE_UNKJOBID:
+					break;
+				case PBSE_PROTOCOL:
+#if PBSOLDE_PROTOCOL != PBSE_PROTOCOL
+				case PBSOLDE_PROTOCOL:
+#endif
+				case PBSE_EXPIRED:
+#if PBSOLDE_EXPIRED != PBSE_EXPIRED
+				case PBSOLDE_EXPIRED:
+#endif
 					if ( session->pbs_conn >= 0 )
 						pbs_disconnect( session->pbs_conn );
 					fsd_log_info(("Protocol error. Reconnecting..."));
@@ -269,15 +274,14 @@ retry_connect:
 					 {
 						goto retry;
 					 }
-                         }
-			else if ( pbs_errno == 0 ) /* ? */
-			{
-			  fsd_exc_raise_code( FSD_ERRNO_INTERNAL_ERROR );
-			}
-			else
-                        {
-			  pbsdrmaa_exc_raise_pbs( "pbs_statjob" );
-			}
+				default:
+					pbsdrmaa_exc_raise_pbs( "pbs_statjob" );
+					break;
+				case 0:  /* ? */
+					fsd_exc_raise_code( FSD_ERRNO_INTERNAL_ERROR );
+					break;
+			 }
+
 		 }
 
 		conn_lock = fsd_mutex_unlock( &self->session->drm_connection_mutex );
