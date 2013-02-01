@@ -1,0 +1,8 @@
+# $Id: pbs_drmaa.conf.example 12 2011-04-20 15:20:29Z mmamonski $
+# pbs_drmaa.conf - Sample pbs_drmaa configuration file.
+
+#wait_thread: 1,
+#pbs_home: "/var/spool/torque",
+#pool_delay: 5,
+
+
